@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plagiarism Detection System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <h1>Plagiarism & Similarity Detection</h1>
+        <p>Local document comparison library for PDF and DOCX files</p>
+    </div>
+</header>
+
+<main>
+    <section class="card">
+        <h2>1. Add Documents</h2>
+        <p>Upload documents to add them to your local library.</p>
+        
+        <!-- Drag & Drop Zone -->
+        <div class="dropzone" id="dropzone">
+            <input id="fileInput" type="file" accept=".pdf,.docx" hidden>
+            <div class="dropzone-content" id="dropzonePrompt">
+                <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p><strong>Drag and drop your file here</strong>, or <span class="browse-link">browse</span></p>
+                <p class="small">Supports PDF and DOCX formats</p>
+            </div>
+
+            <!-- File Selected Preview State -->
+            <div class="file-preview" id="filePreview" style="display: none;">
+                <svg class="file-icon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <div class="file-details">
+                    <span class="file-name" id="fileName">document.pdf</span>
+                    <span class="file-size small" id="fileSize">0 KB</span>
+                </div>
+                <button type="button" class="btn-icon" id="removeFileBtn" title="Remove file">&times;</button>
+            </div>
+        </div>
+
+        <button onclick="upload()" style="margin-top: 16px;">Upload Document</button>
+        <div id="uploadMessage"></div>
+    </section>
+
+    <section class="card">
+        <div class="card-header">
+            <h2>2. Document Library</h2>
+            <button class="secondary" onclick="loadDocuments()">Refresh Library</button>
+        </div>
+        <div id="documents" class="document-list"></div>
+    </section>
+
+    <section class="card">
+        <h2>3. Analysis</h2>
+        <p>Select a target document above to compare it against the rest of your library.</p>
+        <button onclick="analyzeSelected()">Analyze Selected Document</button>
+        <div id="loading"></div>
+        <div id="results"></div>
+    </section>
+</main>
+
+<script src="script.js"></script>
+<script>
+    // Drag & Drop Functionality
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const dropzonePrompt = document.getElementById('dropzonePrompt');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFileBtn = document.getElementById('removeFileBtn');
+
+    // Open file browser on click
+    dropzone.addEventListener('click', (e) => {
+        if (e.target !== removeFileBtn) {
+            fileInput.click();
+        }
+    });
+
+    // Handle Drag Over / Leave
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('drag-over');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('drag-over');
+        }, false);
+    });
+
+    // Handle File Drop
+    dropzone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            updateFilePreview(files[0]);
+        }
+    });
+
+    // Handle File Select via Input
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            updateFilePreview(fileInput.files[0]);
+        }
+    });
+
+    // Remove selected file
+    removeFileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.value = '';
+        dropzonePrompt.style.display = 'block';
+        filePreview.style.display = 'none';
+    });
+
+    function updateFilePreview(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+        dropzonePrompt.style.display = 'none';
+        filePreview.style.display = 'flex';
+    }
+</script>
+</body>
+</html>
